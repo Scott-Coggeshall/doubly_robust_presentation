@@ -1,0 +1,404 @@
+---
+title: "`r emo::ji('muscle')` Doubly Robust `r emo::ji('muscle')` <br> Estimators"
+subtitle: 
+author: "Scott Coggeshall"
+institute: "VA HSR, Seattle-Denver COIN"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+```{css echo = FALSE}
+
+.red { color: #DA291C}
+
+.blue { color: #005EB8}
+
+```
+
+---
+class: inverse, center
+
+# Doubly Robust Estimators for (Model) Robust Causal Inference
+
+![](handshake_edited.png)
+#### Scott Coggeshall, PhD
+#### VA Puget Sound, Denver/Seattle COIN
+
+---
+class: center, middle
+
+# Motivation - (Model) Robust Causal Inference
+
+
+---
+class:inverse
+
+# Defining the Goal
+---
+# Defining the Goal
+
+
+--
+
+Perform causal inference in observational data using a statistical model that is robust
+
+--
+
+Robust to...
+
+--
+
+- outliers `r emo::ji('x')`
+
+--
+
+- unmeasured confounding `r emo::ji('x')`
+
+
+--
+
+- model misspecification `r emo::ji("check")`
+
+
+--
+
+Maintain .blue[good statistical properties] even if parts of our model are .red[wrong]
+---
+
+
+class: inverse, center, middle
+
+# Causal Estimands, Non-parametrically Defined
+
+---
+
+background-image: url(population_of_interest.png)
+
+
+
+
+---
+background-image: url(population_with_counterfactuals.png)
+
+---
+background-image: url(counterfactuals_with_riskfactor.png)
+
+---
+
+
+background-image: url(counterfactuals.png)
+
+---
+background-image: url(counterfactuals_with_probs.png)
+
+---
+
+background-image: url(counterfactuals_with_estimands.png)
+
+---
+
+background-image: url(counterfactuals_with_observed.png)
+
+---
+# 
+Goal: Causal inference on the Average Treatment Effect
+---
+# Notation `r emo::ji('sleeping_face')`
+
+--
+
+- $Y$ - outcome of interest
+- $Z$ - binary exposure of interest
+- $X$ - confounder(s)
+
+--
+
+
+- $Y(1)$ - counterfactual outcome under exposure
+- $Y(0)$ - counterfactual outcome under non-exposure
+
+--
+
+Target causal estimand is the Average Treatment Effect (ATE)
+
+$$
+ATE := E[Y(1)] - E[Y(0)]
+$$
+
+
+
+---
+
+
+---
+
+class: 
+# The Two Cultures (or, Regressioncels vs. Propensity Rotators)
+
+
+.pull-left[
+
+
+Regression model:
+
+$$
+E[Y \mid Z, X]
+$$
+
+
+
+Counterfactual predictions:
+
+$$
+\hat{Y}_1 = \hat{E}[Y \mid Z = 1, X] \\
+\hat{Y}_0 = \hat{E}[Y \mid Z = 0, X]
+$$
+
+
+
+Marginalize
+
+$$
+\begin{align*}
+\widehat{ATE} = \frac{1}{n} \sum_{i = 1}^n \hat{Y}_{1i} - \hat{Y}_{0i}
+\end{align*}
+$$
+
+
+$$
+E[Y \mid Z, X] = \beta_0 + \beta_1 Z + \beta_X X
+$$
+
+]
+
+---
+class: 
+# The Two Cultures (or, Regressioncels vs. Propensity Rotators)
+
+
+.pull-left[
+
+Regression model:
+
+$$
+E[Y \mid Z, X]
+$$
+
+
+Counterfactual predictions:
+
+$$
+\begin{align*}
+\hat{Y}_1 &= \hat{E}[Y \mid Z = 1, X] \\
+\hat{Y}_0 &= \hat{E}[Y \mid Z = 0, X]
+\end{align*}
+$$
+
+
+Marginalize
+
+$$
+\begin{align*}
+\widehat{ATE} = \frac{1}{n} \sum_{i = 1}^n \hat{Y}_{1i} - \hat{Y}_{0i}
+\end{align*}
+$$
+$$
+E[Y \mid Z, X] = \beta_0 + \beta_1 Z + \beta_X X
+$$
+
+
+]
+
+.pull-right[
+
+Propensity score model:
+
+$$
+P(Z \mid X)
+$$
+
+
+Propensity score weights:
+
+$$
+\begin{align*}
+w = \left\{ \begin{aligned}
+  \frac{1}{\hat{P}(Z \mid X)} &\qquad \text{Exposed} \\
+  \frac{1}{1 - \hat{P}(Z \mid X)} &\qquad \text{Unexposed}
+  \end{aligned}
+  \right.
+\end{align*}
+$$
+
+
+$$
+\begin{align*}
+\widehat{ATE} = \frac{1}{n_1} \sum_{i: Z_i = 1} w_i Y_i  - \frac{1}{n_0} \sum_{i: Z_i = 0} w_i Y_i
+\end{align*}
+$$
+
+$$
+logit^{-1}(P(Z \mid X)) = \alpha_0 + \alpha_1 X
+$$
+
+]
+---
+# Doubly Robust Estimators 
+
+--
+
+Regression works great...
+
+--
+
+...*if* the regression model is correctly specified
+
+--
+
+Propensity score weighting works great...
+
+--
+
+...*if* the propensity score model is correctly specified
+
+--
+
+Under correct specification, both approaches can provide *consistent* and *asymptotically normal* estimation 
+
+--
+
+.pull-left[
+
+Consistenty plot goes here
+]
+
+--
+
+.pull-right[
+
+Asymptotic normality goes here
+]
+
+
+
+
+
+---
+# Doubly Robust Estimators
+
+
+![](hybrid_estimator.png)
+
+
+
+---
+
+![](dr_table.png)
+
+
+---
+# Doubly Robust Estimator of ATE
+
+--
+
+Suppose we have a fitted .red[outcome regression model] and a fitted .blue[propensity score model]
+--
+
+$$
+\begin{align*}
+\widehat{ATE}_{DR} &= \frac{1}{n} \sum_{i=1}^n \left( \frac{Z_i Y_i}{\color{blue}{\hat{\pi}_i}} - \frac{Z_i - \color{blue}{\hat{\pi}_i}}{\color{blue}{\hat{\pi}_i}} \times \color{red}{\hat{E}[Y \mid Z = 1, X_i]} \right) \\
+&\qquad - \frac{1}{n} \sum_{i = 1}^n \left( \frac{(1 - Z_i) Y_i}{\color{blue}{\hat{\pi}_i}} - \frac{Z_i - \color{blue}{\hat{\pi}_i}}{\color{blue}{\hat{\pi}_i}} \times \color{red}{\hat{E}[Y \mid Z = 0, X_i]} \right)
+\end{align*}
+$$
+
+
+
+
+---
+class:inverse, center, middle
+
+![](images.jpeg)
+
+> "All models are wrong, but some are useful" 
+>      
+> \- George E.P. Box
+
+---
+# All Models are Wrong, so is Double Robustness Useful?
+
+
+#### $$P(\text{Parametric Regression Model is Correct}) \approx 0$$
+
+
+--
+
+
+
+#### $$P(\text{Parametric Propensity Score Model is Correct}) \approx 0$$
+
+
+
+
+--
+
+# $$"\approx 0" + "\approx 0" \approx 0!$$
+
+---
+
+
+
+---
+# Machine Learning + Doubly Robust Estimators
+
+
+---
+# Tying it all together
+
+---
+# Extensions - Other data mechanisms
+
+--
+
+## `r emo::ji('magnifying')` Missing data `r emo::ji('magnifying')`
+
+--
+
+## `r emo::ji('face_with_symbols_on_mouth')` Censored data `r emo::ji('face_with_symbols_on_mouth')`
+
+
+---
+
+
+
+
+---
+# Drawbacks 
+
+- Efficiency loss 
+ - lower power, wider confidence intervals
+ 
+--
+
+- Guarantees happen as $n \rightarrow \infty$
+
+--
+
+- Marginal vs Conditional estimands
+
+--
+
+- Hyper-focused on a single estimand
+
+
+--
+
+- Bias/variance trade-off
+
+
+
+
